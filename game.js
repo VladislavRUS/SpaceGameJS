@@ -15,6 +15,9 @@ var clearBtn;
 var stats;
 var ctxStats;
 
+var fire;
+var ctxFire;
+
 var gameWidth = 800;
 var gameHeight = 500;
 
@@ -24,9 +27,14 @@ background.src = "images/background.jpg";
 var background1 = new Image();
 background1.src = "images/background.jpg";
 
+var fireImage = new Image;
+fireImage.src = "images/fire.png";
+
 var tiles;
 tiles = new Image();
 tiles.src = "images/tiles.png";
+
+var fireBalls = new Array;
 
 var player;
 var enemies = [];
@@ -52,16 +60,21 @@ var requestAnimFrame = window.requestAnimFrame ||
                        window.oRequestAnimationFrame ||
                        window.msRequestAnimationFrame;
 
+
+
 function init(){
     map = document.getElementById("map");
     pl = document.getElementById("player");
     enemyCanvas = document.getElementById("enemy");
     stats = document.getElementById("stats");
+    fire = document.getElementById("fire");
+
 
     ctxMap = map.getContext("2d");
     ctxPl = pl.getContext("2d");
     ctxEnemy = enemyCanvas.getContext("2d");
     ctxStats = stats.getContext("2d");
+    ctxFire = fire.getContext("2d");
 
     map.width = gameWidth;
     map.height = gameHeight;
@@ -71,15 +84,11 @@ function init(){
     enemyCanvas.height = gameHeight;
     stats.width = gameWidth;
     stats.height = gameHeight;
+    fire.width = gameWidth;
+    fire.height = gameHeight;
 
     ctxStats.fillStyle = "#FFFFFF";
     ctxStats.font = "bold 35pt Arial";
-
-    drawBtn  = document.getElementById("drawBtn");
-    clearBtn = document.getElementById("clearBtn");
-
-    drawBtn.addEventListener("click", drawRect, false);
-    clearBtn.addEventListener("click", clearRect, false);
 
     document.addEventListener("keydown", checkKeyDown, false);
     document.addEventListener("keyup", checkKeyUp, false);
@@ -143,6 +152,9 @@ function draw(){
     for(var i = 0; i < enemies.length; i++){
         enemies[i].draw();
     }
+    for (var j = 0; j < fireBalls.length; j++) {
+        fireBalls[j].draw();
+    }
 }
 
 function update(){
@@ -150,6 +162,10 @@ function update(){
     player.update();
     for(var i = 0; i < enemies.length; i++){
         enemies[i].update();
+    }
+
+    for (var j = 0; j < fireBalls.length; j++) {
+        fireBalls[j].update();
     }
     updateStats();
     drawBg();
@@ -238,6 +254,7 @@ Player.prototype.chooseDir = function(){
 function checkKeyDown(e){
     var keyID = e.keyCode || e.which;
     var keyChar = String.fromCharCode(keyID);
+
     if(keyChar == 'W'){
         player.isUp = true;
         e.preventDefault();
@@ -253,6 +270,11 @@ function checkKeyDown(e){
     if(keyChar == 'D'){
         player.isRight = true;
         e.preventDefault();
+    }
+
+    if(keyID == 32){
+        var ball = new Fire(player.drawX, player.drawY + player.width / 5);
+        fireBalls.push(ball);
     }
 }
 
@@ -321,6 +343,30 @@ function startCreatingEnemies(){
 
 function stopCreatingEnemies(){
         clearInterval(spawnInterval);
+}
+
+function Fire(x, y){
+    this.drawX = x;
+    this.drawY = y;
+
+    this.speed = 20;
+}
+
+Fire.prototype.update = function(){
+    this.drawX += this.speed;
+
+    if(this.drawX > gameWidth * 1.5){
+        fireBalls.splice(fireBalls.indexOf(this), 1);
+    }
+}
+
+Fire.prototype.draw = function(){
+    ctxFire.clearRect(0, 0, gameWidth, gameHeight);
+    ctxFire.drawImage(
+        fireImage,
+        0, 0, 88, 88,
+        this.drawX, this.drawY, 50, 50
+    );
 }
 
 //Other

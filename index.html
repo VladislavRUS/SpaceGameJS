@@ -8,11 +8,12 @@
 </head>
 <body>
     <div id="gameName">Welcome to the game!</div>
-    <canvas id="map"></canvas>
-    <canvas id="player"></canvas>
-    <canvas id="enemy"></canvas>
-    <canvas id="stats"></canvas>
-    <input id="drawBtn" type="button" value="Draw">
-    <input id="clearBtn" type="button" value="Clear">
+    <div id="centered">
+        <canvas id="map" style="position: absolute; z-index: 1;"></canvas>
+        <canvas id="player" style="position: absolute; z-index: 2;"></canvas>
+        <canvas id="enemy" style="position: absolute; z-index: 3;"></canvas>
+        <canvas id="fire" style="position: absolute; z-index: 4;"></canvas>
+        <canvas id="stats" style="position: absolute; z-index: 5;"></canvas>
+    </div>
 </body>
 </html>

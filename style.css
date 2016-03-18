@@ -4,8 +4,7 @@ body{
 }
 
 canvas{
-    display: block;
-    margin: 70px auto 0px;
+    border: solid 3px darkblue;
 }
 
 #gameName{
@@ -15,8 +14,12 @@ canvas{
     text-align: center;
 }
 
-#player, #enemy, #stats{
-    display: block;
-    margin: -500px auto 0px;
+#centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -200px;
+    margin-left: -500px;
 }
+
 
