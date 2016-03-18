@@ -9,16 +9,13 @@ var ctxPl;
 var enemyCanvas;
 var ctxEnemy;
 
-var drawBtn;
-var clearBtn;
-
 var stats;
 var ctxStats;
 
 var fire;
 var ctxFire;
 
-var gameWidth = 800;
+var gameWidth = 1000;
 var gameHeight = 500;
 
 var background = new Image();
@@ -40,19 +37,21 @@ var player;
 var enemies = [];
 
 var isPlaying;
-var health;
 
 var mapX = 0;
 var map1X = gameWidth;
 
 //for creating enemies
 var spawnInterval;
-var spawnTime = 7000;
+var spawnTime = 1000;
 var spawnAmount = 3;
 
 var mouseX;
 var mouseY;
 var mouseControl = false;
+
+var scoreText = "Your score is: ";
+var score = 0;
 
 var requestAnimFrame = window.requestAnimFrame ||
                        window.webkitRequestAnimationFrame ||
@@ -95,15 +94,10 @@ function init(){
     document.addEventListener("mousemove", mouseMove, false);
     document.addEventListener("click", mouseClick, false);
 
+    document.getElementById("score").innerHTML = scoreText + score;
     player = new Player();
-    resetHealth();
 
     startLoop();
-    health = 100;
-}
-
-function resetHealth(){
-    health = 100;
 }
 
 function mouseMove(e){
@@ -167,7 +161,6 @@ function update(){
     for (var j = 0; j < fireBalls.length; j++) {
         fireBalls[j].update();
     }
-    updateStats();
     drawBg();
 }
 
@@ -210,9 +203,6 @@ Player.prototype.draw = function(){
 };
 
 Player.prototype.update = function(){
-    if(health < 0){
-        resetHealth();
-    }
     
     if(this.drawX < 0)
         this.drawX = 0;
@@ -224,13 +214,9 @@ Player.prototype.update = function(){
         this.drawY = gameHeight - this.height;
 
     for(var i = 0; i < enemies.length; i++){
-        if( this.drawX >= enemies[i].drawX &&
-            this.drawY >= enemies[i].drawY &&
-            this.drawX <= enemies[i].drawX
-                       + enemies[i].width &&
-            this.drawX <= enemies[i].drawY
-                       + enemies[i].height){
-            health --;
+        if(overlaps(enemies[i], this)){
+            alert('You lose!');
+            stopLoop();
         }
     }
     this.chooseDir();
@@ -308,7 +294,7 @@ function Enemy(){
     this.width = 320;
     this.height = 150;
 
-    this.speed = 3;
+    this.speed = 10;
 }
 
 Enemy.prototype.draw = function(){
@@ -320,10 +306,20 @@ Enemy.prototype.draw = function(){
 };
 
 Enemy.prototype.update = function(){
-    if(this.drawX + this.width < 0 ){
+    if(this.drawX + this.width < -100 ){
         this.destroy();
     }
-    this.drawX -= 7;
+
+    this.drawX -= this.speed;
+
+    for(var i = 0; i < fireBalls.length; i++){
+        if(overlaps(fireBalls[i], this)){
+            this.destroy();
+            fireBalls[i].drawX = 1000;
+            score++;
+            scoreUp();
+        }
+    }
 };
 
 Enemy.prototype.destroy = function(){
@@ -331,23 +327,22 @@ Enemy.prototype.destroy = function(){
 };
 
 function spawnEnemy(count){
-    for(var i = 0; i < count; i++){
-        enemies[i] = new Enemy();
-    }
+    var en = new Enemy();
+    enemies.push(en);
 }
 
 function startCreatingEnemies(){
-    stopCreatingEnemies();
-    spawnInterval = setInterval(function(){spawnEnemy(spawnAmount)},spawnTime);
-}
-
-function stopCreatingEnemies(){
-        clearInterval(spawnInterval);
+    spawnInterval = setInterval(function(){
+        spawnEnemy(spawnAmount)
+    },spawnTime);
 }
 
 function Fire(x, y){
     this.drawX = x;
     this.drawY = y;
+
+    this.width = 50;
+    this.height = 50;
 
     this.speed = 20;
 }
@@ -365,15 +360,10 @@ Fire.prototype.draw = function(){
     ctxFire.drawImage(
         fireImage,
         0, 0, 88, 88,
-        this.drawX, this.drawY, 50, 50
+        this.drawX, this.drawY, this.width, this.height
     );
-}
+};
 
-//Other
-function updateStats(){
-    ctxStats.clearRect(0, 0, gameWidth, gameHeight);
-    ctxStats.fillText("Health: " + health, 550, 50);
-}
 
 function drawRect(){
     ctxMap.fillStyle = "#3D3D3D";
@@ -404,4 +394,30 @@ function drawBg(){
         0, 0, 800, 500,
         map1X, 0, gameWidth, gameHeight
     );
+}
+
+function overlaps(object, anotherObject){
+    var left = anotherObject.drawX;
+    var right = anotherObject.drawX + anotherObject.width;
+    var top = anotherObject.drawY;
+    var bottom = anotherObject.drawY + anotherObject.height;
+
+    var objectX_center = object.drawX + object.width/2;
+    var objectY_center = object.drawY + object.height/2;
+
+    if(objectX_center > left && objectX_center < right){
+        if(objectY_center > top && objectY_center < bottom){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        return false;
+    }
+}
+
+function scoreUp(){
+    document.getElementById("score").innerHTML = scoreText + score;
 }
